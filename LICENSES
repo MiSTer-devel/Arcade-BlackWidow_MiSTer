@@ -1,0 +1,10 @@
+Everything here is licensed under the GPLv3, except for:
+- bwidow/t65/* 
+- bwidow/roms/romgen_source/*
+
+See the files itself for license. I copied them from the Asteroids source
+package as downloaded from FPGAArcade.com:
+http://fpgaarcade.com/ast_main.htm
+
+Black Widow is (c) 1992 Atari. The game ROMS are too, so they haven't been included
+in this package.
