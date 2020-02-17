@@ -88,7 +88,7 @@ localparam CONF_STR = {
 	"DIP;",
 	"-;",
 	"R0,Reset;",
-	"J1,Fire Right,Fire Left,Fire Down,Fire Up,Start 1, Start 2, Coin;",
+	"J1,Fire Right,Fire Left,Fire Down,Fire Up,Start 1,Start 2,Coin;",
 	"jn,A,B,X,Y,Start,Select,R;",
 	"V,v2.00.",`BUILD_DATE
 };
@@ -259,37 +259,39 @@ reg [7:0] sw[8];
 always @(posedge clk_25) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 
 wire       pressed = ps2_key[9];
-wire [8:0] code    = ps2_key[8:0];
+wire [7:0] code    = ps2_key[7:0];
 always @(posedge clk_25) begin
 	reg old_state;
 	old_state <= ps2_key[10];
 	
 	if(old_state != ps2_key[10]) begin
 		casex(code)
-			'hX75: btn_up          <= pressed; // up
-			'hX72: btn_down        <= pressed; // down
-			'hX6B: btn_left        <= pressed; // left
-			'hX74: btn_right       <= pressed; // right
+			'h75: btn_up      <= pressed; // up
+			'h72: btn_down    <= pressed; // down
+			'h6B: btn_left    <= pressed; // left
+			'h74: btn_right   <= pressed; // right
 
-			'h005: btn_one_player  <= pressed; // F1
-			'h006: btn_two_players <= pressed; // F2
+			'h05: btn_start_1 <= pressed; // F1
+			'h06: btn_start_2 <= pressed; // F2
 			
-			'h14: btn_fireA         <= pressed; // l-ctrl
-			'h11: btn_fireB         <= pressed; // l-alt
-			'h29: btn_fireC         <= pressed; // Space
-			'h12: btn_fireD         <= pressed; // l-shift
+			'h14: btn_fireA   <= pressed; // l-ctrl
+			'h11: btn_fireB   <= pressed; // l-alt
+			'h29: btn_fireC   <= pressed; // Space
+			'h12: btn_fireD   <= pressed; // l-shift
 
 			// JPAC/IPAC/MAME Style Codes
-			'h016: btn_start_1     <= pressed; // 1
-			'h01E: btn_start_2     <= pressed; // 2
-			'h02E: btn_coin_1      <= pressed; // 5
-			'h036: btn_coin_2      <= pressed; // 6
-			'h02D: btn_up_2        <= pressed; // R
-			'h02B: btn_down_2      <= pressed; // F
-			'h023: btn_left_2      <= pressed; // D
-			'h034: btn_right_2     <= pressed; // G
+			'h16: btn_start_1 <= pressed; // 1
+			'h1E: btn_start_2 <= pressed; // 2
+			'h2E: btn_coin_1  <= pressed; // 5
+			'h36: btn_coin_2  <= pressed; // 6
+			/*
+			'h2D: btn_up_2    <= pressed; // R
+			'h2B: btn_down_2  <= pressed; // F
+			'h23: btn_left_2  <= pressed; // D
+			'h34: btn_right_2 <= pressed; // G
+			*/
 			
-			'hX2C: btn_test       <= pressed; // T
+			//'h2C: btn_test    <= pressed; // T
 
 		endcase
 	end
@@ -303,32 +305,31 @@ reg btn_fireA  = 0;
 reg btn_fireB  = 0;
 reg btn_fireC  = 0;
 reg btn_fireD  = 0;
-reg btn_one_player  = 0;
-reg btn_two_players = 0;
-reg btn_test=0;
+//reg btn_test=0;
 
 reg btn_start_1=0;
 reg btn_start_2=0;
 reg btn_coin_1=0;
 reg btn_coin_2=0;
+/*
 reg btn_up_2=0;
 reg btn_down_2=0;
 reg btn_left_2=0;
 reg btn_right_2=0;
+*/
 
 wire m_up     =  btn_up    | joy[3];
 wire m_down   =  btn_down  | joy[2];
 wire m_left   =  btn_left  | joy[1];
 wire m_right  =  btn_right | joy[0];
 
-
 wire m_fire_up     = btn_fireD  | joy[6];
 wire m_fire_down   = btn_fireC  | joy[7];
 wire m_fire_left   = btn_fireB  | joy[5];
 wire m_fire_right  = btn_fireA  | joy[4];
 
-wire m_start1 = btn_one_player  | joy[8];
-wire m_start2 = btn_two_players | joy[9];
+wire m_start1 = btn_start_1  | joy[8];
+wire m_start2 = btn_start_2 | joy[9];
 wire m_coin   = btn_coin_1 | btn_coin_2 | joy[10];
 wire m_coin2   = 0;
 
@@ -372,7 +373,7 @@ always @(*) begin
 		input_4 = ~{ 1'b0, m_start2, m_start1, 5'b0 };
 	end
 	else if (mod_lunarbat) begin
-		input_0 = ~{ 1'b0, 1'b1, 1'b1, 1'b0, 2'b0, m_coin, m_coin2 };
+		input_0 = ~{ 1'b0, 1'b1, sw[2][0], sw[2][1], 2'b0, m_coin, m_coin2 };
 		input_1 = 8'hff;
 		input_2 = 8'hff;
 		//input_3 = ~{ 1'b0, m_start2, m_start1, m_fire_left, m_fire_down, m_fire_right, m_right, m_left };
@@ -417,7 +418,7 @@ arcade_video #(640,480,12) arcade_video
         .fx(0)
 );
 
-wire reset = (RESET | status[0] |  buttons[1] | ioctl_download);
+wire reset = (RESET | status[0] |  buttons[1] | rom_download);
 wire [7:0] audio;
 assign AUDIO_L = {audio, audio};
 assign AUDIO_R = AUDIO_L;

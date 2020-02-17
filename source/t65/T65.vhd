@@ -182,8 +182,8 @@ begin
 	XF <= XF_i;
 	ML_n <= '0' when IR(7 downto 6) /= "10" and IR(2 downto 1) = "11" and MCycle(2 downto 1) /= "00" else '1';
 	VP_n <= '0' when IRQCycle = '1' and (MCycle = "101" or MCycle = "110") else '1';
-	VDA <= '1' when Set_Addr_To_r /= "000" else '0';            -- Incorrect !!!!!!!!!!!!
-	VPA <= '1' when Jump(1) = '0' else '0';                     -- Incorrect !!!!!!!!!!!!
+	VDA <= '1' when Set_Addr_To_r /= "00" else '0';            -- Incorrect !!!!!!!!!!!!
+	VPA <= '1' when Jump(1) = '0' else '0';                    -- Incorrect !!!!!!!!!!!!
 
 	mcode : T65_MCode
 		port map(
@@ -235,7 +235,7 @@ begin
 			PC <= (others => '0');  -- Program Counter
 			IR <= "00000000";
 			S <= (others => '0');       -- Dummy !!!!!!!!!!!!!!!!!!!!!
-			D <= (others => '0');
+			--D <= (others => '0');
 			PBR <= (others => '0');
 			DBR <= (others => '0');
 
@@ -254,7 +254,7 @@ begin
 			if (really_rdy = '1') then
 				R_W_n_i <= not Write or RstCycle;
 
-				D <= (others => '1');   -- Dummy
+				--D <= (others => '1');   -- Dummy
 				PBR <= (others => '1'); -- Dummy
 				DBR <= (others => '1'); -- Dummy
 				EF_i <= '0';    -- Dummy

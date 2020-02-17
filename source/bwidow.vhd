@@ -79,7 +79,7 @@ architecture Behaviour of bwidow is
 	signal latchin_a		: std_logic_vector(7 downto 0);
 	signal latchin_b		: std_logic_vector(7 downto 0);
 	signal latchin_c		: std_logic_vector(7 downto 0);
-	signal latchout		: std_logic_vector(7 downto 0);
+	signal latchout		: std_logic_vector(7 downto 0) := (others => '0');
 	signal cnt_3khz		: std_logic_vector(8 downto 0);
 	signal ena_1_5M		: std_logic;
 	signal reset_l			: std_logic;
@@ -229,7 +229,14 @@ begin
 	intack_l <= '0' when c_addr(15 downto 6)="1000100011" else '1';
 	avg_go <= '1' when c_addr(15 downto 6)="1000100001" else '0';
 	avg_rst <= '1' when c_addr(15 downto 6)="1000100010" else '0';
-	latchout <= c_dout when c_addr(15 downto 12)="1000100000" and c_rw_l='0' else latchout;
+	
+	process(clk) begin
+		if clk'EVENT and clk='1' then
+			if c_addr(15 downto 12)="1000100000" and c_rw_l='0' then
+				latchout <= c_dout;
+			end if;
+		end if;
+	end process;
 
 --	dbg(15)<=clk;
 --	dbg(14)<=ena_1_5M;
@@ -290,9 +297,9 @@ begin
 			else
 				ena_1_5M<='0';
 			end if;
-		end if;
-		if intack_l='0' then
-			irqctr<="0000";
+			if intack_l='0' then
+				irqctr<="0000";
+			end if;
 		end if;
 	end process;
 

@@ -2,6 +2,7 @@ set_global_assignment -name VHDL_FILE source/bwidow_top.vhd
 set_global_assignment -name VHDL_FILE source/bwidow_dw.vhd
 set_global_assignment -name VHDL_FILE dpram.vhd
 set_global_assignment -name VHDL_FILE source/ram2k.vhd
+set_global_assignment -name VHDL_FILE source/ram_2k.vhd
 set_global_assignment -name VHDL_FILE source/pwmgen.vhd
 set_global_assignment -name VHDL_FILE source/noisegen.vhd
 set_global_assignment -name VHDL_FILE source/avg/vector_drawer.vhd
@@ -16,8 +17,4 @@ set_global_assignment -name VHDL_FILE source/pkg_bwidow.vhd
 set_global_assignment -name VHDL_FILE source/pgmrom.vhd
 set_global_assignment -name VHDL_FILE source/earom.vhd
 set_global_assignment -name VHDL_FILE source/bwidow.vhd
-set_global_assignment -name QIP_FILE source/ram_2k.qip
-set_global_assignment -name SDC_FILE bwidow.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE "Arcade-BlackWidow.sv"
-set_global_assignment -name CDF_FILE jtag.cdf
-set_global_assignment -name QIP_FILE sys/sys.qip

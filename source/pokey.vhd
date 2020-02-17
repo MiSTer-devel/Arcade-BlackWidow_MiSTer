@@ -242,12 +242,12 @@ begin
           when x"6" => audf(4)  <= DIN;
           when x"7" => audc(4)  <= DIN;
           when x"8" => audctl   <= DIN;
-          when x"9" => stimer   <= DIN;
-          when x"A" => skres    <= DIN;
+          --when x"9" => stimer   <= DIN;
+          --when x"A" => skres    <= DIN;
           when x"B" => potgo    <= '1';
           --when x"C" =>
-          when x"D" => serout   <= DIN;
-          when x"E" => irqen    <= DIN;
+          --when x"D" => serout   <= DIN;
+          --when x"E" => irqen    <= DIN;
           when x"F" => skctls   <= DIN;
           when others => null;
         end case;
@@ -278,13 +278,13 @@ begin
         when x"6" => DOUT <= pot_val(6);   -- pot 6
         when x"7" => DOUT <= pot_val(7);   -- pot 7
         when x"8" => DOUT <= pin_reg_gated;-- allpot
-        when x"9" => DOUT <= kbcode;
+        when x"9" => DOUT <= (others => '0'); --kbcode;
         when x"A" => DOUT <= random;
         when x"B" => DOUT <= x"FF";
         when x"C" => DOUT <= x"FF";
-        when x"D" => DOUT <= serin;
-        when x"E" => DOUT <= irqst;
-        when x"F" => DOUT <= skstat;
+        when x"D" => DOUT <= (others => '0'); --serin;
+        when x"E" => DOUT <= (others => '0'); --irqst;
+        when x"F" => DOUT <= (others => '0'); --skstat;
         when others => null;
       end case;
     end if;
@@ -328,7 +328,7 @@ begin
 
   -- dump transistors
   --PIN <= x"00" when (pot_fin = '1') else (others => 'Z');
-  p_in_gate : process(pin_reg, reset) -- dump transistor fakeup
+  p_in_gate : process(pin_reg, reset, pot_fin) -- dump transistor fakeup
   begin
     pin_reg_gated <= pin_reg;
     -- I think the datasheet lies about dump transistors being disabled

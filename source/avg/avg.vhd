@@ -129,150 +129,152 @@ begin
 	);
 	
 	process (clk) begin
-		if clk'event and clk='1' and clken='1' then
-			vec_zero<='0';
-			vec_draw<='0';
-			if vgrst='1' then
-				pc<="00000000000000";
-				instruction<=x"0000";
-				state<=ISHALTED;
-				sp<="00";
-				rgb<="000";
-				intensity<=(others=>'0');
-				intens_mod<=(others=>'0');
-				vec_dx<=(others=>'0');
-				vec_dy<=(others=>'0');
-				vec_scale<=(others=>'0');
-				vec_zero<='1';
+		if clk'event and clk='1' then
+			if clken='1' then
+				vec_zero<='0';
 				vec_draw<='0';
-			elsif state=EXECINS then
-				if instruction(15 downto 13)="000" then --draw relative vector
-					state<=FETCHOPLO;
-				elsif instruction(15 downto 13)="001" then --halt
+				if vgrst='1' then
+					pc<="00000000000000";
+					instruction<=x"0000";
 					state<=ISHALTED;
-				elsif instruction(15 downto 13)="010" then --draw short
-					state<=DRAWVECSHORT;
-				elsif instruction(15 downto 12)="0110" then --new color
-					state<=SETCOLOR;
-				elsif instruction(15 downto 12)="0111" then --new scale
-					state<=SETSCALE;
-				elsif instruction(15 downto 13)="100" then --center
-					state<=CENTER;
-				elsif instruction(15 downto 13)="101" then --jump to subroutine
-					state<=PUSHPCFORJUMP;
-				elsif instruction(15 downto 13)="110" then --return from subroutine
-					state<=POPPC;
-				elsif instruction(15 downto 13)="111" then --jump to address
+					sp<="00";
+					rgb<="000";
+					intensity<=(others=>'0');
+					intens_mod<=(others=>'0');
+					vec_dx<=(others=>'0');
+					vec_dy<=(others=>'0');
+					vec_scale<=(others=>'0');
+					vec_zero<='1';
+					vec_draw<='0';
+				elsif state=EXECINS then
+					if instruction(15 downto 13)="000" then --draw relative vector
+						state<=FETCHOPLO;
+					elsif instruction(15 downto 13)="001" then --halt
+						state<=ISHALTED;
+					elsif instruction(15 downto 13)="010" then --draw short
+						state<=DRAWVECSHORT;
+					elsif instruction(15 downto 12)="0110" then --new color
+						state<=SETCOLOR;
+					elsif instruction(15 downto 12)="0111" then --new scale
+						state<=SETSCALE;
+					elsif instruction(15 downto 13)="100" then --center
+						state<=CENTER;
+					elsif instruction(15 downto 13)="101" then --jump to subroutine
+						state<=PUSHPCFORJUMP;
+					elsif instruction(15 downto 13)="110" then --return from subroutine
+						state<=POPPC;
+					elsif instruction(15 downto 13)="111" then --jump to address
+						state<=JUMP;
+					end if;
+				elsif state=DRAWVECLONG then
+					vec_dy<=instruction(12 downto 0);
+					vec_dx<=operand(12 downto 0);
+					intens_mod<=operand(15 downto 13);
+					vec_draw<='1';
+					state<=WAITVECDONE;
+				elsif state=DRAWVECSHORT then
+					vec_dy(5 downto 1)<=instruction(12 downto 8);
+					vec_dy(0)<='0';
+					if instruction(12)='0' then
+						vec_dy(12 downto 6)<="0000000";
+					else
+						vec_dy(12 downto 6)<="1111111";
+					end if;
+					vec_dx(5 downto 1)<=instruction(4 downto 0);
+					vec_dx(0)<='0';
+					if instruction(4)='0' then
+						vec_dx(12 downto 6)<="0000000";
+					else
+						vec_dx(12 downto 6)<="1111111";
+					end if;
+					intens_mod<=instruction(7 downto 5);
+					vec_draw<='1';
+					state<=WAITVECDONE;
+				elsif state=WAITVECDONE then
+					if vec_done='1' then
+						state<=FETCHINSLO;
+					end if;
+				elsif state=SETCOLOR then
+					-- Valid for other arcade machines.
+	--				intensity<=instruction(7 downto 0);
+	--				rgb<=instruction(10 downto 8);
+					-- Black Widow encodes the Z and color in the lowest 8 bits.
+					intensity<=instruction(7 downto 4)&"0000";
+					rgb<=instruction(2 downto 0);
+					state<=FETCHINSLO;
+				elsif state=SETSCALE then
+					if instruction(10 downto 8)="000" then
+						vec_scale<= '0' &(x"ff"-instruction(7 downto 0))&"0000";
+					elsif instruction(10 downto 8)="001" then
+						vec_scale<="00"&(x"ff"-instruction(7 downto 0))&"000";
+					elsif instruction(10 downto 8)="010" then
+						vec_scale<="000"&(x"ff"-instruction(7 downto 0))&"00";
+					elsif instruction(10 downto 8)="011" then
+						vec_scale<="0000"&(x"ff"-instruction(7 downto 0))&"0";
+					elsif instruction(10 downto 8)="100" then
+						vec_scale<="00000"&(x"ff"-instruction(7 downto 0));
+					elsif instruction(10 downto 8)="101" then
+						vec_scale<="00000"&(x"7f"-instruction(7 downto 1));
+					elsif instruction(10 downto 8)="110" then
+						vec_scale<="00000"&(x"3f"-instruction(7 downto 2));
+					elsif instruction(10 downto 8)="111" then
+						vec_scale<="00000"&(x"1f"-instruction(7 downto 3));
+					end if;
+					state<=FETCHINSLO;
+				elsif state=CENTER then
+					intens_mod<="000"; --blank
+					vec_zero<='1';
+					state<=WAITVECDONE;
+				elsif state=PUSHPCFORJUMP then
+					if (sp="00") then stack(0)<=pc; end if;
+					if (sp="01") then stack(1)<=pc; end if;
+					if (sp="10") then stack(2)<=pc; end if;
+					if (sp="11") then stack(3)<=pc; end if;
+					sp<=sp+"01";
 					state<=JUMP;
-				end if;
-			elsif state=DRAWVECLONG then
-				vec_dy<=instruction(12 downto 0);
-				vec_dx<=operand(12 downto 0);
-				intens_mod<=operand(15 downto 13);
-				vec_draw<='1';
-				state<=WAITVECDONE;
-			elsif state=DRAWVECSHORT then
-				vec_dy(5 downto 1)<=instruction(12 downto 8);
-				vec_dy(0)<='0';
-				if instruction(12)='0' then
-					vec_dy(12 downto 6)<="0000000";
+				elsif state=JUMP then
+					pc(13 downto 1)<=instruction(12 downto 0);
+					pc(0)<='0';
+					state<=FETCHINSLO;
+				elsif state=POPPC then
+					if (sp="01") then pc<=stack(0); end if;
+					if (sp="10") then pc<=stack(1); end if;
+					if (sp="11") then pc<=stack(2); end if;
+					if (sp="00") then pc<=stack(3); end if;
+					sp<=sp-"01";
+					state<=FETCHINSLO;
+				elsif state=ISHALTED then
+					pc<=(others=>'0');
+					if vggo='1' then state<=FETCHINSLO; end if;
+					--No idea if the original implementation zeroed the beam and location, but I will.
+					--It's easier on the CRT and deflection amps this way.
+					rgb<="000";
+					vec_zero<='1';
+					--...and keep spinning here.
+	--Memory-accessing things	
+				elsif cpu_cs_l='0' then
+					retryRead<='1';
+				elsif retryRead='1' then
+					retryRead<='0';
+				elsif state=FETCHINSLO then -- Start of instruction handling cycle.
+					instruction(7 downto 0)<=memory_din;
+					pc<=pc+"00000000000001";
+					state<=FETCHINSHI;
+				elsif state=FETCHINSHI then
+					instruction(15 downto 8)<=memory_din;
+					pc<=pc+"00000000000001";
+					state<=EXECINS;
+				elsif state=FETCHOPLO then
+					operand(7 downto 0)<=memory_din;
+					pc<=pc+"00000000000001";
+					state<=FETCHOPHI;
+				elsif state=FETCHOPHI then
+					operand(15 downto 8)<=memory_din;
+					pc<=pc+"00000000000001";
+					state<=DRAWVECLONG;
 				else
-					vec_dy(12 downto 6)<="1111111";
-				end if;
-				vec_dx(5 downto 1)<=instruction(4 downto 0);
-				vec_dx(0)<='0';
-				if instruction(4)='0' then
-					vec_dx(12 downto 6)<="0000000";
-				else
-					vec_dx(12 downto 6)<="1111111";
-				end if;
-				intens_mod<=instruction(7 downto 5);
-				vec_draw<='1';
-				state<=WAITVECDONE;
-			elsif state=WAITVECDONE then
-				if vec_done='1' then
 					state<=FETCHINSLO;
 				end if;
-			elsif state=SETCOLOR then
-				-- Valid for other arcade machines.
---				intensity<=instruction(7 downto 0);
---				rgb<=instruction(10 downto 8);
-				-- Black Widow encodes the Z and color in the lowest 8 bits.
-				intensity<=instruction(7 downto 4)&"0000";
-				rgb<=instruction(2 downto 0);
-				state<=FETCHINSLO;
-			elsif state=SETSCALE then
-				if instruction(10 downto 8)="000" then
-					vec_scale<= '0' &(x"ff"-instruction(7 downto 0))&"0000";
-				elsif instruction(10 downto 8)="001" then
-					vec_scale<="00"&(x"ff"-instruction(7 downto 0))&"000";
-				elsif instruction(10 downto 8)="010" then
-					vec_scale<="000"&(x"ff"-instruction(7 downto 0))&"00";
-				elsif instruction(10 downto 8)="011" then
-					vec_scale<="0000"&(x"ff"-instruction(7 downto 0))&"0";
-				elsif instruction(10 downto 8)="100" then
-					vec_scale<="00000"&(x"ff"-instruction(7 downto 0));
-				elsif instruction(10 downto 8)="101" then
-					vec_scale<="00000"&(x"7f"-instruction(7 downto 1));
-				elsif instruction(10 downto 8)="110" then
-					vec_scale<="00000"&(x"3f"-instruction(7 downto 2));
-				elsif instruction(10 downto 8)="111" then
-					vec_scale<="00000"&(x"1f"-instruction(7 downto 3));
-				end if;
-				state<=FETCHINSLO;
-			elsif state=CENTER then
-				intens_mod<="000"; --blank
-				vec_zero<='1';
-				state<=WAITVECDONE;
-			elsif state=PUSHPCFORJUMP then
-				if (sp="00") then stack(0)<=pc; end if;
-				if (sp="01") then stack(1)<=pc; end if;
-				if (sp="10") then stack(2)<=pc; end if;
-				if (sp="11") then stack(3)<=pc; end if;
-				sp<=sp+"01";
-				state<=JUMP;
-			elsif state=JUMP then
-				pc(13 downto 1)<=instruction(12 downto 0);
-				pc(0)<='0';
-				state<=FETCHINSLO;
-			elsif state=POPPC then
-				if (sp="01") then pc<=stack(0); end if;
-				if (sp="10") then pc<=stack(1); end if;
-				if (sp="11") then pc<=stack(2); end if;
-				if (sp="00") then pc<=stack(3); end if;
-				sp<=sp-"01";
-				state<=FETCHINSLO;
-			elsif state=ISHALTED then
-				pc<=(others=>'0');
-				if vggo='1' then state<=FETCHINSLO; end if;
-				--No idea if the original implementation zeroed the beam and location, but I will.
-				--It's easier on the CRT and deflection amps this way.
-				rgb<="000";
-				vec_zero<='1';
-				--...and keep spinning here.
---Memory-accessing things	
-			elsif cpu_cs_l='0' then
-				retryRead<='1';
-			elsif retryRead='1' then
-				retryRead<='0';
-			elsif state=FETCHINSLO then -- Start of instruction handling cycle.
-				instruction(7 downto 0)<=memory_din;
-				pc<=pc+"00000000000001";
-				state<=FETCHINSHI;
-			elsif state=FETCHINSHI then
-				instruction(15 downto 8)<=memory_din;
-				pc<=pc+"00000000000001";
-				state<=EXECINS;
-			elsif state=FETCHOPLO then
-				operand(7 downto 0)<=memory_din;
-				pc<=pc+"00000000000001";
-				state<=FETCHOPHI;
-			elsif state=FETCHOPHI then
-				operand(15 downto 8)<=memory_din;
-				pc<=pc+"00000000000001";
-				state<=DRAWVECLONG;
-			else
-				state<=FETCHINSLO;
 			end if;
 		end if;
 	end process;
