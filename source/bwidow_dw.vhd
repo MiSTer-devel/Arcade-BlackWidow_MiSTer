@@ -58,13 +58,13 @@ library ieee;
 entity BWIDOW_DW is
   port (
     RESET            : in    std_logic;
-	 clk_25           : in    std_logic;
-	 clk_12            : in    std_logic;
+    clk_50           : in    std_logic;
+    clk_12           : in    std_logic;
 
     X_VECTOR         : in    std_logic_vector(9 downto 0);
     Y_VECTOR         : in    std_logic_vector(9 downto 0);
     Z_VECTOR         : in    std_logic_vector(3 downto 0);
-    RGB		         : in    std_logic_vector(2 downto 0);
+    RGB		     : in    std_logic_vector(2 downto 0);
     BEAM_ON          : in    std_logic;
     BEAM_ENA         : in    std_logic;
 
@@ -73,9 +73,9 @@ entity BWIDOW_DW is
     VIDEO_B_OUT      : out   std_logic_vector(3 downto 0);
     HSYNC_OUT        : out   std_logic;
     VSYNC_OUT        : out   std_logic;
-	 VID_DE				: out   std_logic;
-	 VID_HBLANK			: out		std_logic;
-	 VID_VBLANK			: out		std_logic
+    VID_DE           : out   std_logic;
+    VID_HBLANK       : out   std_logic;
+    VID_VBLANK       : out   std_logic
  
     );
 end;
@@ -94,7 +94,7 @@ architecture RTL of BWIDOW_DW is
   constant H_BACK_PORCH_START  : Bus12 := x"2f0"; -- pixel 752
   constant PIXEL_PER_LINE      : Bus12 := x"320"; -- 800 pixels
 
-          signal CE_PIX         : std_logic;
+  signal CE_PIX               : std_logic;
 
   signal lcount               : std_logic_vector(9 downto 0);
   signal pcount               : std_logic_vector(10 downto 0);
@@ -134,23 +134,23 @@ architecture RTL of BWIDOW_DW is
   
 
 begin
-        pixel_ce : process(clk_25, RESET)
+        pixel_ce : process(clk_50, RESET)
         begin
                 if (RESET = '1') then
                         CE_PIX <= '0';
-                elsif rising_edge(clk_25) then
+                elsif rising_edge(clk_50) then
                         CE_PIX <= not CE_PIX;
                 end if;
         end process;
-	pixel_cnt : process(clk_25, RESET)
+	pixel_cnt : process(clk_50, RESET)
 	 variable vcnt_front_porch_start : boolean;
-    variable hcnt_front_porch_start : boolean;
+         variable hcnt_front_porch_start : boolean;
 	begin
 		if (RESET = '1') then
       hcount <= (others => '0');
       vcount <= (others => '0');
 
-		elsif rising_edge(clk_25) then
+		elsif rising_edge(clk_50) then
 	                        if CE_PIX = '1' then	
 		vcnt_front_porch_start := (vcount = 511);
 		hcnt_front_porch_start := (hcount = 511);
@@ -181,13 +181,13 @@ begin
     vterm <= (lcount = (LINE_PER_FRAME( 9 downto 0) - "1"));
   end process;
 
-  p_display_cnt : process(clk_25, RESET)
+  p_display_cnt : process(clk_50, RESET)
   begin
     if (RESET = '1') then
       pcount <= (others => '0');
       lcount <= (others => '0');
-		dcount <= (others => '0');		
-    elsif rising_edge(clk_25) then
+      dcount <= (others => '0');		
+    elsif rising_edge(clk_50) then
 	                            if CE_PIX = '1' then
       if hterm then
         pcount <= (others => '0');
@@ -208,7 +208,7 @@ begin
       if hterm then
         if vterm then
           lcount <= (others => '0');
-			 dcount <= dcount + "1" ;
+          dcount <= dcount + "1" ;
         else
           lcount <= lcount + "1";
         end if;
@@ -218,7 +218,7 @@ begin
     end if;
   end process;
 
-  p_vsync : process(clk_25, RESET)
+  p_vsync : process(clk_50, RESET)
     variable vcnt_eq_front_porch_start : boolean;
     variable vcnt_eq_sync_start        : boolean;
     variable vcnt_eq_back_porch_start  : boolean;
@@ -226,7 +226,7 @@ begin
     if (RESET = '1') then
       v_sync <= '1';
       v_blank <= '0';
-    elsif rising_edge(clk_25) then
+    elsif rising_edge(clk_50) then
                         if CE_PIX = '1' then
       vcnt_eq_front_porch_start := (lcount = (V_FRONT_PORCH_START(9 downto 0) - "1"));
       vcnt_eq_sync_start        := (lcount = (       V_SYNC_START(9 downto 0) - "1"));
@@ -248,7 +248,7 @@ begin
     end if;
   end process;
 
-  p_hsync : process(clk_25, RESET)
+  p_hsync : process(clk_50, RESET)
     variable hcnt_eq_front_porch_start     : boolean;
     variable hcnt_eq_sync_start            : boolean;
     variable hcnt_eq_back_porch_start      : boolean;
@@ -256,7 +256,7 @@ begin
     if (RESET = '1') then
       h_sync <= '1';
       h_blank <= '1'; -- 0
-    elsif rising_edge(clk_25) then
+    elsif rising_edge(clk_50) then
 	                            if CE_PIX = '1' then
       hcnt_eq_front_porch_start     := (pcount = ( H_FRONT_PORCH_START(10 downto 0) - "1"));
       hcnt_eq_sync_start            := (pcount = (        H_SYNC_START(10 downto 0) - "1"));
@@ -296,7 +296,7 @@ begin
 
   p_video_out : process
   begin
-    wait until rising_edge(clk_25);
+    wait until rising_edge(clk_50);
 	                            if CE_PIX = '1' then
     if raster_active = '1' then
 		if (vid_out(3) = '1') then
@@ -342,8 +342,8 @@ begin
       VIDEO_B_OUT <= "0000";
     end if;
 	 VID_DE <= not(v_blank or h_blank);
-    VSYNC_OUT <= v_sync;
-    HSYNC_OUT <= h_sync;
+         VSYNC_OUT <= v_sync;
+         HSYNC_OUT <= h_sync;
 	 VID_HBLANK <= h_blank;
 	 VID_VBLANK	<= v_blank;
  end if;
@@ -473,7 +473,7 @@ port map
 	address_a => dw_addr(18 downto 0),
 	data_a    => vid_data,
 
-	clock_b   => clk_25,
+	clock_b   => clk_50,
 	address_b => (screen & up_addr),
 	q_b       => vid_out
 );	

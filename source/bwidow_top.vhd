@@ -195,7 +195,7 @@ begin
   u_DW : entity work.BWIDOW_DW 
     port map (
       RESET           =>    reset_6,
-      clk_25          =>    clk_50,
+      clk_50          =>    clk_50,
       clk_12          =>    clk_12,
 
       X_VECTOR        =>    not x_vector(9) & x_vector(8 downto 0),
