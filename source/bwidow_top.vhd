@@ -98,7 +98,8 @@ entity BWIDOW_TOP is
     -- ref clock in
 	 clk_6					  	:  in  std_logic;
 	 clk_12					  	:  in  std_logic;
-	 clk_25						:  in  std_logic
+	 clk_25						:  in  std_logic;
+	 clk_50						:  in  std_logic
     );
 end;
 
@@ -190,30 +191,53 @@ begin
 		dn_wr=>dn_wr
 	);
 	
+--        u_SB : entity work.BWIDOW_SB
+ --               port map (
+  --                      --RESET            => not RESET_L,
+   --                     RESET            => reset_6,
+    --                    clk_vidx2        => clk_50,
+     --                   clk_12           => clk_12,
+--
+ --                       X_VECTOR         => not x_vector(9) & x_vector(8 downto 0),
+  --                      Y_VECTOR         => not y_vector(9) & y_vector(8 downto 0),
+   --                     Z_VECTOR         =>  z_vector,
+--                      RGB                  => rgb,
+    --                    BEAM_ON          => rgb(0) or rgb(1) or rgb(2),
+     --                   BEAM_ENA         => beam_ena,
+
+     -- VIDEO_R_OUT      => VIDEO_R_OUT,
+   --   VIDEO_G_OUT      => VIDEO_G_OUT,
+--      VIDEO_B_OUT      => VIDEO_B_OUT,
+--      HSYNC_OUT        => HSYNC_OUT,
+--      VSYNC_OUT        => VSYNC_OUT,
+--                        VID_DE           => VGA_DE,
+--                        VID_HBLANK       => VID_HBLANK,
+--                        VID_VBLANK       => VID_VBLANK
+ --       );
 
   u_DW : entity work.BWIDOW_DW 
     port map (
       RESET            => reset_6,
-		clk_25				=> clk_25,
-		clk_6					=> clk_6,
+      clk_25		=> clk_50,
+      clk_12		=> clk_12,
 
       X_VECTOR         => not x_vector(9) & x_vector(8 downto 0),
       Y_VECTOR         => not y_vector(9) & y_vector(8 downto 0),
       --Z_VECTOR         => z_vector(3 downto 0) or z_vector(7 downto 4),
       Z_VECTOR         =>  z_vector(7 downto 4),
-		RGB					=> rgb,
+      RGB		=> rgb,
       --BEAM_ON          => beam_on,
       BEAM_ENA         => beam_ena,
       BEAM_ON          => rgb(0) or rgb(1) or rgb(2),
 
-      VIDEO_R_OUT      => VIDEO_R_OUT,
-      VIDEO_G_OUT      => VIDEO_G_OUT,
-      VIDEO_B_OUT      => VIDEO_B_OUT,
-      HSYNC_OUT        => HSYNC_OUT,
-      VSYNC_OUT        => VSYNC_OUT,
-		VID_DE				=> VGA_DE,
-		VID_HBLANK		=>	VID_HBLANK,
-		VID_VBLANK		=>	VID_VBLANK
+     VIDEO_R_OUT      => VIDEO_R_OUT,
+     VIDEO_G_OUT      => VIDEO_G_OUT,
+     VIDEO_B_OUT      => VIDEO_B_OUT,
+     HSYNC_OUT        => HSYNC_OUT,
+     VSYNC_OUT        => VSYNC_OUT,
+     VID_DE		=> VGA_DE,
+     VID_HBLANK	=>	VID_HBLANK,
+     VID_VBLANK	=>	VID_VBLANK
 
       );
 

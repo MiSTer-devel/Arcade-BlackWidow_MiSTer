@@ -59,7 +59,7 @@ entity BWIDOW_DW is
   port (
     RESET            : in    std_logic;
 	 clk_25           : in    std_logic;
-	 clk_6            : in    std_logic;
+	 clk_12            : in    std_logic;
 
     X_VECTOR         : in    std_logic_vector(9 downto 0);
     Y_VECTOR         : in    std_logic_vector(9 downto 0);
@@ -93,6 +93,8 @@ architecture RTL of BWIDOW_DW is
   constant H_SYNC_START        : Bus12 := x"290"; -- pixel 656
   constant H_BACK_PORCH_START  : Bus12 := x"2f0"; -- pixel 752
   constant PIXEL_PER_LINE      : Bus12 := x"320"; -- 800 pixels
+
+          signal CE_PIX         : std_logic;
 
   signal lcount               : std_logic_vector(9 downto 0);
   signal pcount               : std_logic_vector(10 downto 0);
@@ -132,7 +134,14 @@ architecture RTL of BWIDOW_DW is
   
 
 begin
-
+        pixel_ce : process(clk_25, RESET)
+        begin
+                if (RESET = '1') then
+                        CE_PIX <= '0';
+                elsif rising_edge(clk_25) then
+                        CE_PIX <= not CE_PIX;
+                end if;
+        end process;
 	pixel_cnt : process(clk_25, RESET)
 	 variable vcnt_front_porch_start : boolean;
     variable hcnt_front_porch_start : boolean;
@@ -142,7 +151,7 @@ begin
       vcount <= (others => '0');
 
 		elsif rising_edge(clk_25) then
-		
+	                        if CE_PIX = '1' then	
 		vcnt_front_porch_start := (vcount = 511);
 		hcnt_front_porch_start := (hcount = 511);
 		
@@ -162,6 +171,7 @@ begin
       end if;
 
     end if;
+    end if;
 	end process;
 
   -- basic raster gen
@@ -178,6 +188,7 @@ begin
       lcount <= (others => '0');
 		dcount <= (others => '0');		
     elsif rising_edge(clk_25) then
+	                            if CE_PIX = '1' then
       if hterm then
         pcount <= (others => '0');
       else
@@ -204,6 +215,7 @@ begin
       end if;
 
     end if;
+    end if;
   end process;
 
   p_vsync : process(clk_25, RESET)
@@ -215,7 +227,7 @@ begin
       v_sync <= '1';
       v_blank <= '0';
     elsif rising_edge(clk_25) then
-
+                        if CE_PIX = '1' then
       vcnt_eq_front_porch_start := (lcount = (V_FRONT_PORCH_START(9 downto 0) - "1"));
       vcnt_eq_sync_start        := (lcount = (       V_SYNC_START(9 downto 0) - "1"));
       vcnt_eq_back_porch_start  := (lcount = ( V_BACK_PORCH_START(9 downto 0) - "1"));
@@ -233,6 +245,7 @@ begin
       end if;
 
     end if;
+    end if;
   end process;
 
   p_hsync : process(clk_25, RESET)
@@ -244,6 +257,7 @@ begin
       h_sync <= '1';
       h_blank <= '1'; -- 0
     elsif rising_edge(clk_25) then
+	                            if CE_PIX = '1' then
       hcnt_eq_front_porch_start     := (pcount = ( H_FRONT_PORCH_START(10 downto 0) - "1"));
       hcnt_eq_sync_start            := (pcount = (        H_SYNC_START(10 downto 0) - "1"));
       hcnt_eq_back_porch_start      := (pcount = (  H_BACK_PORCH_START(10 downto 0) - "1"));
@@ -260,6 +274,7 @@ begin
         h_blank <= '0';
       end if;
 
+    end if;
     end if;
   end process;
 
@@ -282,6 +297,7 @@ begin
   p_video_out : process
   begin
     wait until rising_edge(clk_25);
+	                            if CE_PIX = '1' then
     if raster_active = '1' then
 		if (vid_out(3) = '1') then
 		video_r <= "1111";
@@ -330,11 +346,12 @@ begin
     HSYNC_OUT <= h_sync;
 	 VID_HBLANK <= h_blank;
 	 VID_VBLANK	<= v_blank;
+ end if;
   end process;
 
   up_addr <= (Y_Vid(8 downto 0) & X_Vid(8 downto 0));
   
-  clear_ram : process(clk_25, RESET)
+  clear_ram : process(clk_12, RESET)
 	variable state 				: integer range 0 to 4;
 	variable beam_ena_r 	: std_logic := '0';
   
@@ -342,8 +359,9 @@ begin
 		if RESET = '1' then
 			beam_ena_r := '0';
 
-		elsif rising_edge(clk_25) then
-		vram_wren <= '0' after 2 ns;
+		elsif rising_edge(clk_12) then
+		--vram_wren <= '0' after 2 ns;
+		vram_wren <= '0';
 		
 		if dcount = "000"  then
 			screen <= "0";
@@ -450,7 +468,7 @@ begin
     video_rgb : work.dpram generic map (19,4)	
 port map
 (
-	clock_a   => clk_25,
+	clock_a   => clk_12,
 	wren_a    => vram_wren,
 	address_a => dw_addr(18 downto 0),
 	data_a    => vid_data,

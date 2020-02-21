@@ -466,7 +466,8 @@ BWIDOW_TOP BWIDOW_TOP
 	.RESET_L (~reset),	
 	.clk_6(clk_6),
 	.clk_12(clk_12),
-	.clk_25(clk_25)
+	.clk_25(clk_25),
+	.clk_50(clk_50)
 );
 
 endmodule
