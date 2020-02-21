@@ -360,8 +360,8 @@ begin
 			beam_ena_r := '0';
 
 		elsif rising_edge(clk_12) then
-		--vram_wren <= '0' after 2 ns;
-		vram_wren <= '0';
+		vram_wren <= '0' after 2 ns;
+		--vram_wren <= '0';
 		
 		if dcount = "000"  then
 			screen <= "0";

@@ -423,8 +423,6 @@ wire [7:0] audio;
 assign AUDIO_L = {audio, audio};
 assign AUDIO_R = AUDIO_L;
 assign AUDIO_S = 0;
-wire [1:0] lang = 2'b00;
-wire [1:0] ships = 2'b00;
 wire vgade;
 
 BWIDOW_TOP BWIDOW_TOP
@@ -433,8 +431,6 @@ BWIDOW_TOP BWIDOW_TOP
 	//.BUTTON(BUTTONS),
 	//.SELF_TEST_SWITCH_L(~status[7]), 
 	
-	.LANG(lang),
-	.SHIPS(ships),
 	.AUDIO_OUT(audio),
 	.dn_addr(ioctl_addr[15:0]),
 	.dn_data(ioctl_dout),

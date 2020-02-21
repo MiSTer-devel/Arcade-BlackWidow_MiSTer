@@ -62,24 +62,24 @@ entity BWIDOW_TOP is
   port (
     BUTTON            : in std_logic_vector(14 downto 0); -- active low
 	 
-	 SW_B4				 : in std_logic_vector(7 downto 0);
-	 SW_D4				 : in std_logic_vector(7 downto 0);
+    SW_B4				 : in std_logic_vector(7 downto 0);
+    SW_D4				 : in std_logic_vector(7 downto 0);
 	 
-	 input_0        : in  std_logic_vector( 7 downto 0);
+    input_0           : in  std_logic_vector( 7 downto 0);
 	 --input_1        : in  std_logic_vector( 7 downto 0);
 	 --input_2        : in  std_logic_vector( 7 downto 0);
-	 input_3        : in  std_logic_vector( 7 downto 0);
-	 input_4        : in  std_logic_vector( 7 downto 0);
+    input_3           : in  std_logic_vector( 7 downto 0);
+    input_4           : in  std_logic_vector( 7 downto 0);
 
 	 
-    LANG					 : in std_logic_vector(1 downto 0);
-	 SHIPS				 : in std_logic_vector(1 downto 0);
+    --LANG              : in std_logic_vector(1 downto 0);
+    --SHIPS             : in std_logic_vector(1 downto 0);
     AUDIO_OUT         : out   std_logic_vector(7 downto 0);
-	 SELF_TEST_SWITCH_L: in		std_logic; 
+    --SELF_TEST_SWITCH_L: in		std_logic; 
 
-		dn_addr          	: in std_logic_vector(15 downto 0);
-		dn_data         	: in std_logic_vector(7 downto 0);
-		dn_wr					: in std_logic;
+    dn_addr           : in std_logic_vector(15 downto 0);
+    dn_data           : in std_logic_vector(7 downto 0);
+    dn_wr					: in std_logic;
     
     VIDEO_R_OUT       : out   std_logic_vector(3 downto 0);
     VIDEO_G_OUT       : out   std_logic_vector(3 downto 0);
@@ -87,19 +87,19 @@ entity BWIDOW_TOP is
 
     HSYNC_OUT         : out   std_logic;
     VSYNC_OUT         : out   std_logic;
-	 VGA_DE					: out std_logic;
-	 VID_HBLANK			: out std_logic;
-	 VID_VBLANK			: out std_logic;
+    VGA_DE					: out std_logic;
+    VID_HBLANK	      : out std_logic;
+    VID_VBLANK        : out std_logic;
 
 	 
 	 
     RESET_L           : in    std_logic;
 
     -- ref clock in
-	 clk_6					  	:  in  std_logic;
-	 clk_12					  	:  in  std_logic;
-	 clk_25						:  in  std_logic;
-	 clk_50						:  in  std_logic
+    clk_6	      :  in  std_logic;
+    clk_12            :  in  std_logic;
+    clk_25            :  in  std_logic;
+    clk_50            :  in  std_logic
     );
 end;
 
@@ -167,77 +167,54 @@ begin
     end if;
   end process;
 
-  	mybwidow: entity work.bwidow port map (
-		clk => clk_12,
-		clk_25 => clk_25,
-		reset_h => not reset_6_l,
+  mybwidow: entity work.bwidow port map (
+		clk              => clk_12,
+		clk_25           => clk_25,
+		reset_h          => not reset_6_l,
 		analog_sound_out => AUDIO_OUT,
-		analog_x_out => x_vector,
-		analog_y_out => y_vector,
-		analog_z_out => z_vector,
-      BEAM_ENA          => beam_ena,
-		rgb_out => rgb,
-		dbg => open,
+		analog_x_out     => x_vector,
+		analog_y_out     => y_vector,
+		analog_z_out     => z_vector,
+                BEAM_ENA         => beam_ena,
+		rgb_out          => rgb,
+		dbg              => open,
 		--buttons => button,
-		SW_B4 => SW_B4,
-		SW_D4 => SW_D4,
-		input_0 => input_0,
+		SW_B4            => SW_B4,
+		SW_D4            => SW_D4,
+		input_0          => input_0,
 		--input_1 => input_1,
 		--input_2 => input_2,
-		input_3 => input_3,
-		input_4 => input_4,
-		dn_addr=>dn_addr,
-		dn_data=>dn_data,
-		dn_wr=>dn_wr
+		input_3          => input_3,
+		input_4          => input_4,
+		dn_addr          =>dn_addr,
+		dn_data          =>dn_data,
+		dn_wr            =>dn_wr
 	);
 	
---        u_SB : entity work.BWIDOW_SB
- --               port map (
-  --                      --RESET            => not RESET_L,
-   --                     RESET            => reset_6,
-    --                    clk_vidx2        => clk_50,
-     --                   clk_12           => clk_12,
---
- --                       X_VECTOR         => not x_vector(9) & x_vector(8 downto 0),
-  --                      Y_VECTOR         => not y_vector(9) & y_vector(8 downto 0),
-   --                     Z_VECTOR         =>  z_vector,
---                      RGB                  => rgb,
-    --                    BEAM_ON          => rgb(0) or rgb(1) or rgb(2),
-     --                   BEAM_ENA         => beam_ena,
-
-     -- VIDEO_R_OUT      => VIDEO_R_OUT,
-   --   VIDEO_G_OUT      => VIDEO_G_OUT,
---      VIDEO_B_OUT      => VIDEO_B_OUT,
---      HSYNC_OUT        => HSYNC_OUT,
---      VSYNC_OUT        => VSYNC_OUT,
---                        VID_DE           => VGA_DE,
---                        VID_HBLANK       => VID_HBLANK,
---                        VID_VBLANK       => VID_VBLANK
- --       );
 
   u_DW : entity work.BWIDOW_DW 
     port map (
-      RESET            => reset_6,
-      clk_25		=> clk_50,
-      clk_12		=> clk_12,
+      RESET           =>    reset_6,
+      clk_25          =>    clk_50,
+      clk_12          =>    clk_12,
 
-      X_VECTOR         => not x_vector(9) & x_vector(8 downto 0),
-      Y_VECTOR         => not y_vector(9) & y_vector(8 downto 0),
+      X_VECTOR        =>    not x_vector(9) & x_vector(8 downto 0),
+      Y_VECTOR        =>    not y_vector(9) & y_vector(8 downto 0),
       --Z_VECTOR         => z_vector(3 downto 0) or z_vector(7 downto 4),
-      Z_VECTOR         =>  z_vector(7 downto 4),
-      RGB		=> rgb,
+      Z_VECTOR        =>    z_vector(7 downto 4),
+      RGB             =>    rgb,
       --BEAM_ON          => beam_on,
-      BEAM_ENA         => beam_ena,
-      BEAM_ON          => rgb(0) or rgb(1) or rgb(2),
+      BEAM_ENA        =>    beam_ena,
+      BEAM_ON         =>    rgb(0) or rgb(1) or rgb(2),
 
-     VIDEO_R_OUT      => VIDEO_R_OUT,
-     VIDEO_G_OUT      => VIDEO_G_OUT,
-     VIDEO_B_OUT      => VIDEO_B_OUT,
-     HSYNC_OUT        => HSYNC_OUT,
-     VSYNC_OUT        => VSYNC_OUT,
-     VID_DE		=> VGA_DE,
-     VID_HBLANK	=>	VID_HBLANK,
-     VID_VBLANK	=>	VID_VBLANK
+     VIDEO_R_OUT      =>    VIDEO_R_OUT,
+     VIDEO_G_OUT      =>    VIDEO_G_OUT,
+     VIDEO_B_OUT      =>    VIDEO_B_OUT,
+     HSYNC_OUT        =>    HSYNC_OUT,
+     VSYNC_OUT        =>    VSYNC_OUT,
+     VID_DE	      =>    VGA_DE,
+     VID_HBLANK	      =>    VID_HBLANK,
+     VID_VBLANK	      =>    VID_VBLANK
 
       );
 
