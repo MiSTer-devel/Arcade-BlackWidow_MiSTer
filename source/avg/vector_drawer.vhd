@@ -79,7 +79,7 @@ begin
 				if draw='1' then 
 					--restart drawing the vector
 					itsdone<='0';
-					normsteps<="1111";
+					normsteps<="1011"; -- 12 bit values can be shifted by 11 at most
 					normrel_x<=rel_x;
 					normrel_y<=rel_y;
 					normscale<=scale;
@@ -87,7 +87,7 @@ begin
 				end if;
 			elsif normsteps/="0000" then
 				--Normalize.
-				if normrel_x(12)=normrel_x(11) and normrel_y(12)=normrel_y(11) then --and normscale(0)='0' then
+				if normrel_x(12)=normrel_x(11) and normrel_y(12)=normrel_y(11) and normscale(0)='0' then
 					normsteps<=normsteps-"0001";
 					normrel_x(12 downto 1)<=normrel_x(11 downto 0);
 					normrel_x(0)<='0';
