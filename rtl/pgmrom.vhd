@@ -28,7 +28,6 @@ use work.pkg_bwidow.all;
 entity pgmrom is
     Port ( addr : in  STD_LOGIC_VECTOR (14 downto 0);
            data : out  STD_LOGIC_VECTOR (7 downto 0);
-           clk_25 : in  STD_LOGIC;
            clk : in  STD_LOGIC;
 			  
 				dn_addr           : in 	std_logic_vector(15 downto 0);
@@ -72,7 +71,7 @@ rom_f_cs <= '1' when dn_addr(15 downto 12) = "0101"     else '0';
 roma : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_a_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,
@@ -84,7 +83,7 @@ port map
 romb : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_b_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,
@@ -96,7 +95,7 @@ port map
 romc : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_c_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,
@@ -108,7 +107,7 @@ port map
 romd : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_d_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,
@@ -120,7 +119,7 @@ port map
 rome : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_e_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,
@@ -132,7 +131,7 @@ port map
 romf : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_f_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,

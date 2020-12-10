@@ -147,7 +147,6 @@ begin
 	mypgmrom: pgmrom port map (
 		addr		=> pgmrom_addr(14 downto 0),
 		data		=> pgmrom_dout,
-		clk_25		=> clk_25,
 		clk		=> clk,
 		dn_addr =>dn_addr,
 		dn_data =>dn_data,

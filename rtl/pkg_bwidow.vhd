@@ -49,7 +49,6 @@ end component;
 component pgmrom is
     Port ( addr : in  STD_LOGIC_VECTOR (14 downto 0);
            data : out  STD_LOGIC_VECTOR (7 downto 0);
-			  clk_25 : in  STD_LOGIC;
            clk : in  STD_LOGIC;
 			  dn_addr           : in 	std_logic_vector(15 downto 0);
 			  dn_data         	 : in 	std_logic_vector(7 downto 0);
@@ -60,7 +59,6 @@ end component;
 component vecrom is
     Port ( addr : in  STD_LOGIC_VECTOR (13 downto 0);
            data : out  STD_LOGIC_VECTOR (7 downto 0);
-			  clk_25 : in  STD_LOGIC;
            clk : in  STD_LOGIC;
 			  dn_addr           : in 	std_logic_vector(15 downto 0);
 			  dn_data         	 : in 	std_logic_vector(7 downto 0);

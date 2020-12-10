@@ -27,7 +27,6 @@ use work.pkg_bwidow.all;
 entity vecrom is
     Port ( addr : in  STD_LOGIC_VECTOR (13 downto 0);
            data : out  STD_LOGIC_VECTOR (7 downto 0);
-			  clk_25 : in  STD_LOGIC;
            clk : in  STD_LOGIC;
 			  dn_addr           : in 	std_logic_vector(15 downto 0);
 			  dn_data         	 : in 	std_logic_vector(7 downto 0);
@@ -63,7 +62,7 @@ rom_vd_cs <= '1' when dn_addr(15 downto 12) = "1001"     else '0';
 roma : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_va_cs,
 	--address_a => dn_addr(10 downto 0),
 	address_a => dn_addr(11 downto 0),
@@ -77,7 +76,7 @@ port map
 romb : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_vb_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,
@@ -89,7 +88,7 @@ port map
 romc : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_vc_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,
@@ -101,7 +100,7 @@ port map
 romd : work.dpram generic map (12,8)
 port map
 (
-	clock_a   => Clk_25,
+	clock_a   => clk,
 	wren_a    => dn_wr and rom_vd_cs,
 	address_a => dn_addr(11 downto 0),
 	data_a    => dn_data,

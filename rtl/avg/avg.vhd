@@ -109,7 +109,6 @@ begin
 		addr		=> memory_addr,
 		data		=> vecrom_dout,
 		clk		=> clk,
-		clk_25	=> clk_25,
 		dn_addr	=>dn_addr,
 		dn_data	=>dn_data,
 		dn_wr		=>dn_wr

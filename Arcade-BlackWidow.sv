@@ -59,6 +59,7 @@ module emu
 	//    [4]   : 0=RGB  1=BGR (for 16/24/32 modes)
 	//
 	// FB_STRIDE either 0 (rounded to 256 bytes) or multiple of 16 bytes.
+	`ifdef USE_FB
 	output        FB_EN,
 	output  [4:0] FB_FORMAT,
 	output [11:0] FB_WIDTH,
@@ -76,7 +77,8 @@ module emu
 	output [23:0] FB_PAL_DOUT,
 	input  [23:0] FB_PAL_DIN,
 	output        FB_PAL_WR,
-
+	`endif
+	
 	output        LED_USER,  // 1 - ON, 0 - OFF.
 
 	// b[1]: 0 - LED status is system status OR'd with b[0]
@@ -90,6 +92,7 @@ module emu
 	output [15:0] AUDIO_R,
 	output        AUDIO_S,    // 1 - signed audio samples, 0 - unsigned
 
+	`ifdef USE_DDRAM
 	//High latency DDR3 RAM interface
 	//Use for non-critical time purposes
 	output        DDRAM_CLK,
@@ -102,7 +105,8 @@ module emu
 	output [63:0] DDRAM_DIN,
 	output  [7:0] DDRAM_BE,
 	output        DDRAM_WE,
-
+	`endif
+	
 	// Open-drain User port.
 	// 0 - D+/RX
 	// 1 - D-/TX
@@ -122,7 +126,7 @@ assign LED_POWER = 0;
 assign VIDEO_ARX = status[1] ? 8'd16 : 8'd4;
 assign VIDEO_ARY = status[1] ? 8'd9  : 8'd3;
 
-assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
+//assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
 
 `include "build_id.v" 
 localparam CONF_STR = {
@@ -264,7 +268,7 @@ wire        rom_download = ioctl_download && !ioctl_index;
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
-	.clk_sys(clk_25),
+	.clk_sys(clk_12),
 	.HPS_BUS(HPS_BUS),
 
 	.conf_str(CONF_STR),
@@ -292,7 +296,7 @@ reg mod_gravitar   = 0;
 reg mod_lunarbat   = 0;
 reg mod_spacduel   = 0;
 
-always @(posedge clk_25) begin
+always @(posedge clk_12) begin
 	reg [7:0] mod = 0;
 	
 	if (ioctl_wr & (ioctl_index==1)) mod <= ioctl_dout;
@@ -304,11 +308,11 @@ end
 
 // load the DIPS
 reg [7:0] sw[8];
-always @(posedge clk_25) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
+always @(posedge clk_12) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 
 wire       pressed = ps2_key[9];
 wire [7:0] code    = ps2_key[7:0];
-always @(posedge clk_25) begin
+always @(posedge clk_12) begin
 	reg old_state;
 	old_state <= ps2_key[10];
 	
