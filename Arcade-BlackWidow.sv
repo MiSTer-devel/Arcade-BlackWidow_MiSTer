@@ -1,8 +1,7 @@
 //============================================================================
-//  Arcade: Pacman
+//  Arcade: Black Widow
 //
 //  Port to MiSTer
-//  Copyright (C) 2017 Sorgelig
 //
 //  This program is free software; you can redistribute it and/or modify it
 //  under the terms of the GNU General Public License as published by the Free
@@ -123,8 +122,10 @@ assign LED_USER  = ioctl_download;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 
-assign VIDEO_ARX = status[1] ? 8'd16 : 8'd4;
-assign VIDEO_ARY = status[1] ? 8'd9  : 8'd3;
+wire [1:0] ar = status[15:14];
+
+assign VIDEO_ARX =  (!ar) ? ( 8'd4) : (ar - 1'd1);
+assign VIDEO_ARY =  (!ar) ? ( 8'd3) : 12'd0;
 
 //assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
 
@@ -132,7 +133,7 @@ assign VIDEO_ARY = status[1] ? 8'd9  : 8'd3;
 localparam CONF_STR = {
 	"A.BWIDOW;;",
 	"-;",
-	"H0O1,Aspect Ratio,Original,Wide;",
+	"H0OEF,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 //	"O2,Orientation,Vert,Horz;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",  
 	"-;",
@@ -260,8 +261,6 @@ wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_dout;
 wire  [7:0] ioctl_index;
 
-wire [10:0] ps2_key;
-
 wire [15:0] joy_0, joy_1;
 wire [15:0] joy = joy_0 | joy_1;
 wire        rom_download = ioctl_download && !ioctl_index;
@@ -287,8 +286,7 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 	.ioctl_index(ioctl_index),
 
 	.joystick_0(joy_0),
-	.joystick_1(joy_1),
-	.ps2_key(ps2_key)
+	.joystick_1(joy_1)
 );
 
 reg mod_bwidow     = 0;
@@ -310,79 +308,20 @@ end
 reg [7:0] sw[8];
 always @(posedge clk_12) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 
-wire       pressed = ps2_key[9];
-wire [7:0] code    = ps2_key[7:0];
-always @(posedge clk_12) begin
-	reg old_state;
-	old_state <= ps2_key[10];
-	
-	if(old_state != ps2_key[10]) begin
-		casex(code)
-			'h75: btn_up      <= pressed; // up
-			'h72: btn_down    <= pressed; // down
-			'h6B: btn_left    <= pressed; // left
-			'h74: btn_right   <= pressed; // right
 
-			'h05: btn_start_1 <= pressed; // F1
-			'h06: btn_start_2 <= pressed; // F2
-			
-			'h14: btn_fireA   <= pressed; // l-ctrl
-			'h11: btn_fireB   <= pressed; // l-alt
-			'h29: btn_fireC   <= pressed; // Space
-			'h12: btn_fireD   <= pressed; // l-shift
+wire m_up     =  joy[3];
+wire m_down   =  joy[2];
+wire m_left   =  joy[1];
+wire m_right  =  joy[0];
 
-			// JPAC/IPAC/MAME Style Codes
-			'h16: btn_start_1 <= pressed; // 1
-			'h1E: btn_start_2 <= pressed; // 2
-			'h2E: btn_coin_1  <= pressed; // 5
-			'h36: btn_coin_2  <= pressed; // 6
-			/*
-			'h2D: btn_up_2    <= pressed; // R
-			'h2B: btn_down_2  <= pressed; // F
-			'h23: btn_left_2  <= pressed; // D
-			'h34: btn_right_2 <= pressed; // G
-			*/
-			
-			//'h2C: btn_test    <= pressed; // T
+wire m_fire_up     = joy[6];
+wire m_fire_down   = joy[7];
+wire m_fire_left   = joy[5];
+wire m_fire_right  = joy[4];
 
-		endcase
-	end
-end
-
-reg btn_up    = 0;
-reg btn_down  = 0;
-reg btn_right = 0;
-reg btn_left  = 0;
-reg btn_fireA  = 0;
-reg btn_fireB  = 0;
-reg btn_fireC  = 0;
-reg btn_fireD  = 0;
-//reg btn_test=0;
-
-reg btn_start_1=0;
-reg btn_start_2=0;
-reg btn_coin_1=0;
-reg btn_coin_2=0;
-/*
-reg btn_up_2=0;
-reg btn_down_2=0;
-reg btn_left_2=0;
-reg btn_right_2=0;
-*/
-
-wire m_up     =  btn_up    | joy[3];
-wire m_down   =  btn_down  | joy[2];
-wire m_left   =  btn_left  | joy[1];
-wire m_right  =  btn_right | joy[0];
-
-wire m_fire_up     = btn_fireD  | joy[6];
-wire m_fire_down   = btn_fireC  | joy[7];
-wire m_fire_left   = btn_fireB  | joy[5];
-wire m_fire_right  = btn_fireA  | joy[4];
-
-wire m_start1 = btn_start_1  | joy[8];
-wire m_start2 = btn_start_2 | joy[9];
-wire m_coin   = btn_coin_1 | btn_coin_2 | joy[10];
+wire m_start1 = joy[8];
+wire m_start2 = joy[9];
+wire m_coin   = joy[10];
 wire m_coin2   = 0;
 
 
