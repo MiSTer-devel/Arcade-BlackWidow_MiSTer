@@ -319,9 +319,9 @@ wire m_fire_down   = joy_0[7] | joy_1[2];
 wire m_fire_left   = joy_0[5] | joy_1[1];
 wire m_fire_right  = joy_0[4] | joy_1[0];
 
-wire m_start1 = joy_0[8];
-wire m_start2 = joy_1[8];
-wire m_coin   = joy[9];
+wire m_start1 = joy[8];
+wire m_start2 = joy[9];
+wire m_coin   = joy[10];
 wire m_coin2   = 0;
 
 
