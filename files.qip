@@ -1,6 +1,7 @@
 set_global_assignment -name VHDL_FILE rtl/bwidow_top.vhd
 set_global_assignment -name VHDL_FILE rtl/bwidow_dw.vhd
-set_global_assignment -name VHDL_FILE dpram.vhd
+set_global_assignment -name VHDL_FILE rtl/dpram.vhd
+set_global_assignment -name VHDL_FILE rtl/dpram2k.vhd
 set_global_assignment -name VHDL_FILE rtl/ram2k.vhd
 set_global_assignment -name VHDL_FILE rtl/ram_2k.vhd
 set_global_assignment -name VHDL_FILE rtl/pwmgen.vhd
@@ -17,4 +18,5 @@ set_global_assignment -name VHDL_FILE rtl/pkg_bwidow.vhd
 set_global_assignment -name VHDL_FILE rtl/pgmrom.vhd
 set_global_assignment -name VHDL_FILE rtl/earom.vhd
 set_global_assignment -name VHDL_FILE rtl/bwidow.vhd
+set_global_assignment -name SYSTEMVERILOG_FILE "rtl/hiscore.sv"
 set_global_assignment -name SYSTEMVERILOG_FILE "Arcade-BlackWidow.sv"

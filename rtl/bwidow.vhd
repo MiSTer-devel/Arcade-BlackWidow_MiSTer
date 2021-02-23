@@ -31,6 +31,7 @@ entity bwidow is
 		reset_h   : in    std_logic;
 		clk			: in    std_logic; --12 MHz
 		clk_25		: in	std_logic;
+		pause_h   : in    std_logic;
 		analog_sound_out    : out std_logic_vector(7 downto 0);
 		analog_x_out    : out std_logic_vector(9 downto 0);
 		analog_y_out    : out std_logic_vector(9 downto 0);
@@ -49,7 +50,14 @@ entity bwidow is
 		input_3        : in  std_logic_vector( 7 downto 0);
 		input_4        : in  std_logic_vector( 7 downto 0);
 
-		dbg				 : out std_logic_vector(15 downto 0)
+		dbg				 : out std_logic_vector(15 downto 0);
+		
+		-- HISCORE
+		hs_address   : in  std_logic_vector(15 downto 0);
+		hs_data_out  : out std_logic_vector(7 downto 0);
+		hs_data_in   : in  std_logic_vector(7 downto 0);
+		hs_write     : in  std_logic
+		
 	);
 end bwidow;
 
@@ -125,7 +133,7 @@ begin
 		Res_n   => reset_l,
 		Enable  => ena_1_5M,
 		Clk     => clk,
-		Rdy     => '1',
+		Rdy     => not pause_h,
 		Abort_n => '1',
 		IRQ_n   => c_irq_l,
 		NMI_n   => '1',
@@ -153,15 +161,22 @@ begin
 		dn_wr =>dn_wr
 	);
 	
-	mypgmram: entity work.ram2k port map (
-		addr		=> pgmram_addr,
-		data_in	=> c_dout,
-		data_out	=> pgmram_dout,
---		ena 	 	=> ena_1_5M, --doesn't work due to pipelining
-		ena		=> '1',
-		cs_l		=> pgmram_cs_l, -- no enable on Altera, hopefully this works
-		rw_l 		=> c_rw_l,
-		clk		=> clk
+	mypgmram: entity work.dpram2k port map (
+		addr_a		=> pgmram_addr,
+		data_in_a	=> c_dout,
+		data_out_a	=> pgmram_dout,
+--		ena 	 		=> ena_1_5M, --doesn't work due to pipelining
+		ena_a			=> '1',
+		cs_l_a		=> pgmram_cs_l, -- no enable on Altera, hopefully this works
+		rw_l_a 		=> c_rw_l,
+		clk_a			=> clk,
+		
+		addr_b		=> hs_address(10 downto 0),
+		data_in_b	=> hs_data_in,
+		data_out_b	=> hs_data_out,
+		ena_b			=> '1',
+		we_b			=> hs_write,
+		clk_b			=> clk
 	);
 	
 	myearom: earom port map (

@@ -91,15 +91,22 @@ entity BWIDOW_TOP is
     VID_HBLANK	      : out std_logic;
     VID_VBLANK        : out std_logic;
 
-	 
-	 
-    RESET_L           : in    std_logic;
+	RESET_L           : in    std_logic;
+
+	pause_h				: in    std_logic;
 
     -- ref clock in
     clk_6	      :  in  std_logic;
     clk_12            :  in  std_logic;
     clk_25            :  in  std_logic;
-    clk_50            :  in  std_logic
+    clk_50            :  in  std_logic;
+
+	 -- HISCORE
+	hs_address   : in  std_logic_vector(15 downto 0);
+	hs_data_out  : out std_logic_vector(7 downto 0);
+	hs_data_in   : in  std_logic_vector(7 downto 0);
+	hs_write     : in  std_logic
+
     );
 end;
 
@@ -171,6 +178,7 @@ begin
 		clk              => clk_12,
 		clk_25           => clk_25,
 		reset_h          => not reset_6_l,
+		pause_h 			  => pause_h,
 		analog_sound_out => AUDIO_OUT,
 		analog_x_out     => x_vector,
 		analog_y_out     => y_vector,
@@ -188,13 +196,18 @@ begin
 		input_4          => input_4,
 		dn_addr          =>dn_addr,
 		dn_data          =>dn_data,
-		dn_wr            =>dn_wr
+		dn_wr            =>dn_wr,
+		hs_address       =>hs_address,
+		hs_data_out      =>hs_data_out,
+		hs_data_in       =>hs_data_in,
+		hs_write         =>hs_write
 	);
 	
 
   u_DW : entity work.BWIDOW_DW 
     port map (
       RESET           =>    reset_6,
+      PAUSE           =>    pause_h,
       clk_50          =>    clk_50,
       clk_12          =>    clk_12,
 
