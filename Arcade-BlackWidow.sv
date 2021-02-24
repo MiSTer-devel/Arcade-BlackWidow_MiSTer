@@ -51,6 +51,10 @@ module emu
 	output [1:0]  VGA_SL,
 	output        VGA_SCALER, // Force VGA scaler
 
+	input  [11:0] HDMI_WIDTH,
+	input  [11:0] HDMI_HEIGHT,
+
+`ifdef USE_FB
 	// Use framebuffer from DDRAM (USE_FB=1 in qsf)
 	// FB_FORMAT:
 	//    [2:0] : 011=8bpp(palette) 100=16bpp 101=24bpp 110=32bpp
@@ -58,7 +62,6 @@ module emu
 	//    [4]   : 0=RGB  1=BGR (for 16/24/32 modes)
 	//
 	// FB_STRIDE either 0 (rounded to 256 bytes) or multiple of 16 bytes.
-	`ifdef USE_FB
 	output        FB_EN,
 	output  [4:0] FB_FORMAT,
 	output [11:0] FB_WIDTH,
@@ -76,7 +79,7 @@ module emu
 	output [23:0] FB_PAL_DOUT,
 	input  [23:0] FB_PAL_DIN,
 	output        FB_PAL_WR,
-	`endif
+`endif
 	
 	output        LED_USER,  // 1 - ON, 0 - OFF.
 
@@ -91,7 +94,7 @@ module emu
 	output [15:0] AUDIO_R,
 	output        AUDIO_S,    // 1 - signed audio samples, 0 - unsigned
 
-	`ifdef USE_DDRAM
+`ifdef USE_DDRAM
 	//High latency DDR3 RAM interface
 	//Use for non-critical time purposes
 	output        DDRAM_CLK,
@@ -104,7 +107,7 @@ module emu
 	output [63:0] DDRAM_DIN,
 	output  [7:0] DDRAM_BE,
 	output        DDRAM_WE,
-	`endif
+`endif
 	
 	// Open-drain User port.
 	// 0 - D+/RX
@@ -141,8 +144,8 @@ localparam CONF_STR = {
 	"DIP;",
 	"-;",
 	"R0,Reset;",
-	"J1,Fire Right,Fire Left,Fire Down,Fire Up,Start 1,Start 2,Coin;",
-	"jn,A,B,X,Y,Start,Select,R;",
+	"J1,Fire Right,Fire Left,Fire Down,Fire Up,Start 1,Start 2,Coin,Pause;",
+	"jn,A,B,X,Y,Start,Select,R,L;",
 	"V,v2.00.",`BUILD_DATE
 };
 
@@ -239,10 +242,10 @@ pll pll
 (
 	.refclk(CLK_50M),
 	.rst(0),
-	.outclk_0(clk_50),	
-	.outclk_1(clk_25),	
-	.outclk_2(clk_12),	
-	.outclk_3(clk_6),	
+	.outclk_0(clk_50),
+	.outclk_1(clk_25),
+	.outclk_2(clk_12),
+	.outclk_3(clk_6),
 	.locked(pll_locked)
 );
 
@@ -255,15 +258,21 @@ wire        forced_scandoubler;
 wire        direct_video;
 
 wire [21:0] gamma_bus;
+
 wire        ioctl_download;
+wire        ioctl_upload;
 wire        ioctl_wr;
+wire        ioctl_rd;
 wire [24:0] ioctl_addr;
 wire  [7:0] ioctl_dout;
+wire  [7:0] ioctl_din;
 wire  [7:0] ioctl_index;
+wire        ioctl_wait;
 
 wire [15:0] joy_0, joy_1;
 wire [15:0] joy = joy_0 | joy_1;
 wire        rom_download = ioctl_download && !ioctl_index;
+wire [24:0] dl_addr = ioctl_addr[15:0]; //background offset
 
 hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 (
@@ -280,10 +289,14 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 	.direct_video(direct_video),
 
 	.ioctl_download(ioctl_download),
+	.ioctl_upload(ioctl_upload),
 	.ioctl_wr(ioctl_wr),
+	.ioctl_rd(ioctl_rd),
 	.ioctl_addr(ioctl_addr),
 	.ioctl_dout(ioctl_dout),
+	.ioctl_din(ioctl_din),
 	.ioctl_index(ioctl_index),
+	.ioctl_wait(ioctl_wait),
 
 	.joystick_0(joy_0),
 	.joystick_1(joy_1)
@@ -324,6 +337,38 @@ wire m_start2 = joy[9];
 wire m_coin   = joy[10];
 wire m_coin2   = 0;
 
+wire m_pause  = joy[11];
+
+// PAUSE SYSTEM
+reg 			pause;									// Pause signal (active-high)
+reg 			pause_toggle = 1'b0;					// User paused (active-high)
+reg [31:0]	pause_timer;							// Time since pause
+reg [31:0]	pause_timer_dim = 31'h1DCD6500;	// Time until screen dim (10 seconds at 50Mhz)
+
+always @(posedge clk_50) begin 
+	// User pause toggle
+	reg old_pause;
+	old_pause <= m_pause;
+	if(~old_pause & m_pause) pause_toggle <= ~pause_toggle;
+	
+	// Screen dim while paused
+	rgb_out <= {r,g,b};
+	if(pause_toggle)
+	begin
+		if(pause_timer < pause_timer_dim)
+		begin
+			pause_timer <= pause_timer + 1'b1;
+		end
+		else
+		begin
+			rgb_out <= {r >> 1,g >> 1, b >> 1};
+		end
+	end
+	else
+	begin
+		pause_timer <= 1'b0;
+	end
+end
 
 //buttons(14 downto 0): SELFTEST, SA, COINAUX COINL COINR START2 START1 FD FU FL FR MU MD ML MR
 
@@ -384,6 +429,7 @@ end
 wire hblank, vblank;
 wire hs, vs;
 wire [3:0] r,g,b;
+wire [11:0] rgb_out;
 
 
 reg ce_pix;
@@ -397,7 +443,7 @@ arcade_video #(640,12) arcade_video
 
         .clk_video(clk_50),
 
-        .RGB_in({r,g,b}),
+        .RGB_in(rgb_out),
         .HBlank(hblank),
         .VBlank(vblank),
         .HSync(~hs),
@@ -421,12 +467,11 @@ BWIDOW_TOP BWIDOW_TOP
 	//.SELF_TEST_SWITCH_L(~status[7]), 
 	
 	.AUDIO_OUT(audio),
-	.dn_addr(ioctl_addr[15:0]),
-	.dn_data(ioctl_dout),
-	//.dn_wr(ioctl_wr),
-	//.dn_wr(ioctl_wr && !ioctl_index)	,
-	.dn_wr(ioctl_wr & rom_download),
 	
+	.dn_addr(dl_addr),
+	.dn_wr(ioctl_wr & rom_download),
+	.dn_data(ioctl_dout),
+
 	.VIDEO_R_OUT(r),
 	.VIDEO_G_OUT(g),
 	.VIDEO_B_OUT(b),
@@ -448,11 +493,45 @@ BWIDOW_TOP BWIDOW_TOP
 	.SW_B4(input_2),
 	.SW_D4(input_1),
 
-	.RESET_L (~reset),	
+	.RESET_L(~reset),
 	.clk_6(clk_6),
 	.clk_12(clk_12),
 	.clk_25(clk_25),
-	.clk_50(clk_50)
+	.clk_50(clk_50),
+
+	.pause_h(pause),
+
+	.hs_address(hs_address),
+	.hs_data_out(ioctl_din),
+	.hs_data_in(hs_to_ram),
+	.hs_write(hs_write)
+);
+
+
+// HISCORE SAVE/LOAD
+
+wire [11:0]hs_address;
+wire [7:0]hs_to_ram;
+wire hs_write;
+wire hs_pause;
+
+assign pause = hs_pause || pause_toggle;
+
+hiscore #(12) hi (
+	.clk(clk_12),
+	.reset(reset),
+	.delay(1'b0),
+	.ioctl_upload(ioctl_upload),
+	.ioctl_download(ioctl_download),
+	.ioctl_wr(ioctl_wr),
+	.ioctl_addr(ioctl_addr),
+	.ioctl_dout(ioctl_dout),
+	.ioctl_din(ioctl_din),
+	.ioctl_index(ioctl_index),
+	.ram_address(hs_address),
+	.data_to_ram(hs_to_ram),
+	.ram_write(hs_write),
+	.pause(hs_pause)
 );
 
 endmodule

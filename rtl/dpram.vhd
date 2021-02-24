@@ -1,5 +1,6 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.all;
+use IEEE.numeric_std.ALL;
 
 LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
@@ -73,3 +74,4 @@ BEGIN
 	);
 
 END SYN;
+

@@ -58,6 +58,7 @@ library ieee;
 entity BWIDOW_DW is
   port (
     RESET            : in    std_logic;
+	 PAUSE            : in    std_logic;
     clk_50           : in    std_logic;
     clk_12           : in    std_logic;
 
@@ -124,6 +125,7 @@ architecture RTL of BWIDOW_DW is
 
   signal dcount					: std_logic_vector(2 downto 0);
   signal screen					: std_logic_vector(0 downto 0);
+  signal screen_visible			: std_logic_vector(0 downto 0);
   signal vcount					: std_logic_vector(8 downto 0);
   signal hcount					: std_logic_vector(8 downto 0);
   signal pxcount					: std_logic_vector(8 downto 0);
@@ -463,18 +465,21 @@ begin
 		beam_ena_r := beam_ena;
 		end if;
   end process;
+
+
+-- If game is paused then stick to the first buffer to avoid flashing
+screen_visible <= screen when PAUSE ='0' else "0";
   
-  
-    video_rgb : work.dpram generic map (19,4)	
+video_rgb : work.dpram generic map (19,4)	
 port map
 (
 	clock_a   => clk_12,
-	wren_a    => vram_wren,
+	wren_a    => vram_wren and not PAUSE,	-- Disable write during pause
 	address_a => dw_addr(18 downto 0),
 	data_a    => vid_data,
 
 	clock_b   => clk_50,
-	address_b => (screen & up_addr),
+	address_b => (screen_visible & up_addr),
 	q_b       => vid_out
 );	
 
