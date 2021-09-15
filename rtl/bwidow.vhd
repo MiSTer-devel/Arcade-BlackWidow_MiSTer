@@ -30,7 +30,6 @@ entity bwidow is
   port(
 		reset_h   : in    std_logic;
 		clk			: in    std_logic; --12 MHz
-		clk_25		: in	std_logic;
 		pause_h   : in    std_logic;
 		analog_sound_out    : out std_logic_vector(7 downto 0);
 		analog_x_out    : out std_logic_vector(9 downto 0);
@@ -206,7 +205,6 @@ begin
 		zout => analog_z_out,
 		rgbout => rgb_out,
 		dbg => avg_dbg,
-		clk_25		=> clk_25,
 		dn_addr =>dn_addr,
 		dn_data =>dn_data,
 		dn_wr =>dn_wr

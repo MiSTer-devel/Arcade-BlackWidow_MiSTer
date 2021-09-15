@@ -7,7 +7,7 @@ Port to MiSTer by Alan Steremberg
 This game used two joysticks. If you hook it to an ipac/jpac style adapter, it will use joystick 1 and 2. You can use the MiSTer OSD to
 map the joystick buttons for the second joystick to the digital buttons on the gamepad.
 
-# Keyboard inputs :
+## Keyboard inputs :
 ```
    F1                        : Coin + Start 1P
    F2                        : Coin + Start 2P
@@ -23,8 +23,20 @@ map the joystick buttons for the second joystick to the digital buttons on the g
 
  Joystick support. Make sure to setup the keys specifically for this. It will use 4 buttons for a second digital joypad.
 ```
- 
-# ROMs
+
+## Hiscore save/load
+
+Save and load of hiscores is supported for the following games on this core:
+ - Black Widow
+ - Gravitar
+
+To save your hiscores manually, press the 'Save Settings' option in the OSD.  Hiscores will be automatically loaded when the core is started.
+
+To enable automatic saving of hiscores, turn on the 'Autosave Hiscores' option, press the 'Save Settings' option in the OSD, and reload the core.  Hiscores will then be automatically saved (if they have changed) any time the OSD is opened.
+
+Hiscore data is stored in /media/fat/config/nvram/ as ```<mra filename>.nvm```
+
+## ROMs
 ```
                                 *** Attention ***
 
