@@ -28,7 +28,6 @@ component bwidow is
   port(
 		reset_h   : in    std_logic;
 		clk			: in    std_logic; --12 MHz
-		clk_25		: in	std_logic;
 		analog_sound_out    : out std_logic_vector(7 downto 0);
 		analog_x_out    : out std_logic_vector(9 downto 0);
 		analog_y_out    : out std_logic_vector(9 downto 0);
@@ -223,7 +222,6 @@ component avg is
            rgbout : out  STD_LOGIC_VECTOR (2 downto 0);
 				dbg	: out std_logic_vector(15 downto 0);
 			  clken: in STD_LOGIC;
-			  clk_25 : in  STD_LOGIC;
            clk : in  STD_LOGIC;
 			  dn_addr           : in 	std_logic_vector(15 downto 0);
 			  dn_data         	 : in 	std_logic_vector(7 downto 0);

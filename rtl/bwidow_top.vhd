@@ -98,7 +98,6 @@ entity BWIDOW_TOP is
     -- ref clock in
     clk_6	      :  in  std_logic;
     clk_12            :  in  std_logic;
-    clk_25            :  in  std_logic;
     clk_50            :  in  std_logic;
 
 	 -- HISCORE
@@ -176,7 +175,6 @@ begin
 
   mybwidow: entity work.bwidow port map (
 		clk              => clk_12,
-		clk_25           => clk_25,
 		reset_h          => not reset_6_l,
 		pause_h 			  => pause_h,
 		analog_sound_out => AUDIO_OUT,
