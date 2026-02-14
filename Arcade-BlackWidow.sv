@@ -202,8 +202,8 @@ localparam CONF_STR = {
 //	"O2,Orientation,Vert,Horz;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
-	"O6,Fire,Buttons,Second Joystick;",
-	"-;",
+	"h2O6,Fire,Buttons,Second Joystick;",
+	"h2-;",
 	"H1OR,Autosave Hiscores,Off,On;",
 	"P1,Pause options;",
 	"P1OP,Pause when OSD is open,On,Off;",
@@ -348,7 +348,7 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 
 	.buttons(buttons),
 	.status(status),
-	.status_menumask({~hs_configured,direct_video}),
+	.status_menumask({mod_bwidow,~hs_configured,direct_video}),
 	.forced_scandoubler(forced_scandoubler),
 	.gamma_bus(gamma_bus),
 	.direct_video(direct_video),
@@ -392,13 +392,13 @@ wire m_down   = joy_0[2];
 wire m_left   = joy_0[1];
 wire m_right  = joy_0[0];
 
-// Fire mode:
-// - status[6]=0: P1 fire buttons only
-// - status[6]=1: P2 joystick (joy_1 dpad)
-wire m_fire_up     = status[6] ? joy_1[3] : joy_0[6];
-wire m_fire_down   = status[6] ? joy_1[2] : joy_0[7];
-wire m_fire_left   = status[6] ? joy_1[1] : joy_0[5];
-wire m_fire_right  = status[6] ? joy_1[0] : joy_0[4];
+// Fire mode (Black Widow only):
+// - mod_bwidow && status[6]=0: P1 fire buttons
+// - mod_bwidow && status[6]=1: P2 joystick (joy_1 dpad)
+wire m_fire_up     = (mod_bwidow && status[6]) ? joy_1[3] : joy_0[6];
+wire m_fire_down   = (mod_bwidow && status[6]) ? joy_1[2] : joy_0[7];
+wire m_fire_left   = (mod_bwidow && status[6]) ? joy_1[1] : joy_0[5];
+wire m_fire_right  = (mod_bwidow && status[6]) ? joy_1[0] : joy_0[4];
 
 wire m_start1 = joy[8];
 wire m_start2 = joy[9];
