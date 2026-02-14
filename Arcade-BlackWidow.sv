@@ -202,6 +202,8 @@ localparam CONF_STR = {
 //	"O2,Orientation,Vert,Horz;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
+	"O6,Fire,Buttons,Second Joystick;",
+	"-;",
 	"H1OR,Autosave Hiscores,Off,On;",
 	"P1,Pause options;",
 	"P1OP,Pause when OSD is open,On,Off;",
@@ -385,15 +387,18 @@ reg [7:0] sw[8];
 always @(posedge clk_12) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 
 
-wire m_up     =  joy_0[3];
-wire m_down   =  joy_0[2];
-wire m_left   =  joy_0[1];
-wire m_right  =  joy_0[0];
+wire m_up     = joy_0[3];
+wire m_down   = joy_0[2];
+wire m_left   = joy_0[1];
+wire m_right  = joy_0[0];
 
-wire m_fire_up     = joy_0[6] | joy_1[3];
-wire m_fire_down   = joy_0[7] | joy_1[2];
-wire m_fire_left   = joy_0[5] | joy_1[1];
-wire m_fire_right  = joy_0[4] | joy_1[0];
+// Fire mode:
+// - status[6]=0: P1 fire buttons only
+// - status[6]=1: P2 joystick (joy_1 dpad)
+wire m_fire_up     = status[6] ? joy_1[3] : joy_0[6];
+wire m_fire_down   = status[6] ? joy_1[2] : joy_0[7];
+wire m_fire_left   = status[6] ? joy_1[1] : joy_0[5];
+wire m_fire_right  = status[6] ? joy_1[0] : joy_0[4];
 
 wire m_start1 = joy[8];
 wire m_start2 = joy[9];
